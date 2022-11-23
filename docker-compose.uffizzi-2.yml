@@ -1,0 +1,42 @@
+version: "3"
+
+x-uffizzi:
+    ingress:
+        service: pwa
+        port: 8080
+
+services:
+    server:
+        image: "registry.uffizzi.com/a8357f7d-3329-4e0f-b39c-8384930c7c7b:60d"
+        environment:
+            PL_DATA_BACKEND: leveldb
+            PL_DATA_LEVELDB_DIR: /data
+            PL_DATA_ATTACHMENTS_BACKEND: fs
+            PL_DATA_ATTACHMENTS_DIR: /attachments
+            PL_SERVER_CLIENT_URL: http://localhost:8080
+            PL_EMAIL_BACKEND: console
+        ports:
+            - 3000:3000
+        volumes:
+            - attachments:/attachments
+            - data:/data
+        restart: unless-stopped
+        deploy:
+          resources:
+            limits:
+              memory: 500M
+    pwa:
+        image: "registry.uffizzi.com/da78170d-6e6b-46d2-bfca-d3852b44bd19:60d"
+        environment:
+            PL_SERVER_URL: http://localhost:3000
+            PL_PWA_URL: http://localhost:8080
+        ports:
+            - 8080:8080
+        restart: on-failure
+        deploy:
+          resources:
+            limits:
+              memory: 2000M
+volumes:
+    data:
+    attachments:
